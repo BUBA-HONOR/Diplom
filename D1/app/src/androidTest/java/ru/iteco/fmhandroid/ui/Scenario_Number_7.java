@@ -18,10 +18,12 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import io.qameta.allure.Allure;
 import ru.iteco.fmhandroid.R;
+import ru.iteco.fmhandroid.ui.customFile.CustomAndroidJUnit4Runner;
 
 @LargeTest
-@RunWith(AndroidJUnit4.class)
+@RunWith(CustomAndroidJUnit4Runner.class)
 public class Scenario_Number_7 {
     @Rule
     public ActivityScenarioRule<AppActivity> mActivityScenarioRule =
@@ -30,17 +32,34 @@ public class Scenario_Number_7 {
     // Отображение информации о приложении.
     @Test
     public void applicationInformation() {
-        waitForView(R.id.login_text_input_layout, 15000);
-        performClick(R.id.login_text_input_layout);
-        typeTextInView(R.id.login_edit_text, "login2");
-        performClick(R.id.password_text_input_layout);
-        typeTextInView(R.id.password_edit_text, "password2");
-        performClick(R.id.enter_button);
-        waitForView(R.id.main_menu_image_button, 5000);
-        performClick(R.id.main_menu_image_button);
-        performClickWithText("About");
-        waitForView(R.id.about_privacy_policy_value_text_view, 15000);
-        checkViewIsDisplayed("Privacy Policy:");
+        Allure.step("Ожидаем загрузку экрана логина", () -> {
+            waitForView(R.id.login_text_input_layout, 15000);
+        });
+
+        Allure.step("Вводим логин и пароль", () -> {
+            performClick(R.id.login_text_input_layout);
+            typeTextInView(R.id.login_edit_text, "login2");
+            performClick(R.id.password_text_input_layout);
+            typeTextInView(R.id.password_edit_text, "password2");
+        });
+
+        Allure.step("Нажимаем кнопку 'Войти'", () -> {
+            performClick(R.id.enter_button);
+        });
+
+        Allure.step("Открываем главное меню", () -> {
+            waitForView(R.id.main_menu_image_button, 5000);
+            performClick(R.id.main_menu_image_button);
+        });
+
+        Allure.step("Переходим в раздел 'О приложении'", () -> {
+            performClickWithText("About");
+            waitForView(R.id.about_privacy_policy_value_text_view, 15000);
+        });
+
+        Allure.step("Проверяем, что отображается текст 'Privacy Policy:'", () -> {
+            checkViewIsDisplayed("Privacy Policy:");
+        });
     }
 
     private void waitForView(int viewId, long duration) {
