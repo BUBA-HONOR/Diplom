@@ -1,84 +1,104 @@
 package ru.iteco.fmhandroid.ui;
 
+
 import static androidx.test.espresso.Espresso.onView;
 import static androidx.test.espresso.action.ViewActions.click;
-import static androidx.test.espresso.action.ViewActions.typeText;
 import static androidx.test.espresso.assertion.ViewAssertions.matches;
+import static androidx.test.espresso.contrib.RecyclerViewActions.actionOnItemAtPosition;
 import static androidx.test.espresso.matcher.ViewMatchers.isDisplayed;
 import static androidx.test.espresso.matcher.ViewMatchers.isRoot;
+import static androidx.test.espresso.matcher.ViewMatchers.withContentDescription;
 import static androidx.test.espresso.matcher.ViewMatchers.withId;
 import static androidx.test.espresso.matcher.ViewMatchers.withText;
+import static org.hamcrest.Matchers.allOf;
+import static org.hamcrest.Matchers.is;
+
 import static ru.iteco.fmhandroid.ui.customFile.TestUtilities.waitDisplayed;
 
+import android.view.View;
+import android.view.ViewGroup;
+import android.view.ViewParent;
+
+import androidx.test.espresso.ViewAction;
 import androidx.test.ext.junit.rules.ActivityScenarioRule;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import androidx.test.filters.LargeTest;
 
+import org.hamcrest.Description;
+import org.hamcrest.Matcher;
+import org.hamcrest.TypeSafeMatcher;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import io.qameta.allure.Allure;
 import ru.iteco.fmhandroid.R;
-import ru.iteco.fmhandroid.ui.customFile.CustomAndroidJUnit4Runner;
 
 @LargeTest
-@RunWith(CustomAndroidJUnit4Runner.class)
+@RunWith(AndroidJUnit4.class)
 public class Scenario_Number_7 {
+
     @Rule
     public ActivityScenarioRule<AppActivity> mActivityScenarioRule =
             new ActivityScenarioRule<>(AppActivity.class);
 
-    // Отображение информации о приложении.
     @Test
-    public void applicationInformation() {
-        Allure.step("Ожидаем загрузку экрана логина", () -> {
-            waitForView(R.id.login_text_input_layout, 15000);
-        });
+    public void LoveIsAll() {
+        waitForView(R.id.our_mission_image_button, 15000);
 
-        Allure.step("Вводим логин и пароль", () -> {
-            performClick(R.id.login_text_input_layout);
-            typeTextInView(R.id.login_edit_text, "login2");
-            performClick(R.id.password_text_input_layout);
-            typeTextInView(R.id.password_edit_text, "password2");
-        });
+        clickView(R.id.our_mission_image_button, "Our Mission");
 
-        Allure.step("Нажимаем кнопку 'Войти'", () -> {
-            performClick(R.id.enter_button);
-        });
+        int[] itemPositions = {0, 2, 3, 1};
+        for (int position : itemPositions) {
+            performActionOnRecyclerViewItem(R.id.our_mission_item_list_recycler_view, position, click());
+        }
 
-        Allure.step("Открываем главное меню", () -> {
-            waitForView(R.id.main_menu_image_button, 5000);
-            performClick(R.id.main_menu_image_button);
-        });
-
-        Allure.step("Переходим в раздел 'О приложении'", () -> {
-            performClickWithText("About");
-            waitForView(R.id.about_privacy_policy_value_text_view, 15000);
-        });
-
-        Allure.step("Проверяем, что отображается текст 'Privacy Policy:'", () -> {
-            checkViewIsDisplayed("Privacy Policy:");
-        });
+        checkTextInView(
+                R.id.our_mission_item_description_text_view,
+                "Нет шаблона и стандарта, есть только дух, который живет в разных домах по-разному. Но всегда он добрый, любящий и помогающий."
+        );
     }
 
     private void waitForView(int viewId, long duration) {
         onView(isRoot()).perform(waitDisplayed(viewId, duration));
     }
 
-    private void performClick(int viewId) {
-        onView(withId(viewId)).perform(click());
+    private void clickView(int viewId, String description) {
+        onView(allOf(
+                withId(viewId),
+                withContentDescription(description),
+                isDisplayed()
+        )).perform(click());
     }
 
-    private void typeTextInView(int viewId, String text) {
-        onView(withId(viewId)).perform(click(), typeText(text));
+    private void performActionOnRecyclerViewItem(int recyclerViewId, int position, ViewAction action) {
+        onView(allOf(
+                withId(recyclerViewId),
+                isDisplayed()
+        )).perform(actionOnItemAtPosition(position, action));
     }
 
-    private void performClickWithText(String text) {
-        onView(withText(text)).perform(click());
+    private void checkTextInView(int viewId, String expectedText) {
+        onView(allOf(
+                withId(viewId),
+                withText(expectedText),
+                isDisplayed()
+        )).check(matches(withText(expectedText)));
     }
 
-    private void checkViewIsDisplayed(String text) {
-        onView(withText(text)).check(matches(isDisplayed()));
+    private static Matcher<View> childAtPosition(final Matcher<View> parentMatcher, final int position) {
+        return new TypeSafeMatcher<View>() {
+            @Override
+            public void describeTo(Description description) {
+                description.appendText("Child at position " + position + " in parent ");
+                parentMatcher.describeTo(description);
+            }
+
+            @Override
+            public boolean matchesSafely(View view) {
+                ViewParent parent = view.getParent();
+                return parent instanceof ViewGroup && parentMatcher.matches(parent)
+                        && view.equals(((ViewGroup) parent).getChildAt(position));
+            }
+        };
     }
 }
