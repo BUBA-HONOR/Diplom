@@ -30,7 +30,7 @@ import ru.iteco.fmhandroid.ui.customFile.AuthorizationPage;
 
 @LargeTest
 @RunWith(AndroidJUnit4.class)
-public class Scenario_Number_2 {
+public class TestIsNotValid {
     @Rule
     public ActivityScenarioRule<AppActivity> mActivityScenarioRule =
             new ActivityScenarioRule<>(AppActivity.class);
@@ -48,7 +48,7 @@ public class Scenario_Number_2 {
     }
 
     @Test
-    public void Authorization_with_no_valid_data() {
+    public void authorizationBasedOnInvalidData() { // Авторизация по не валидным данным .
         // Вводим неверные данные
         onView(isRoot()).perform(waitDisplayed(R.id.login_text_input_layout, 7000));
         onView(withId(R.id.login_edit_text)).perform(replaceText("wrong_login"));
